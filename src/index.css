@@ -105,3 +105,8 @@ body {
   padding-bottom: 0 !important;
   padding-left: 2em !important;
 }
+
+.clear
+.btn-block {
+  padding-top: .5rem;
+}

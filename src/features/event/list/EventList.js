@@ -3,8 +3,15 @@ import EventListItem from './EventListItem';
 
 class EventList extends Component {
   buildEvents() {
-    const { events } = this.props;
-    return events.map(event => <EventListItem key={event.id} event={event} />);
+    const { events, updateOpenEvent, updateDeleteEvent } = this.props;
+    return events.map(event => {
+      return <EventListItem
+        key={event.id}
+        event={event}
+        updateOpenEvent={updateOpenEvent}
+        updateDeleteEvent={updateDeleteEvent}
+      />
+    });
   }
 
   render() {

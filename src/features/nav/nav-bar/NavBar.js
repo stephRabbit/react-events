@@ -8,7 +8,7 @@ class NavBar extends Component {
           <Menu inverted fixed="top">
             <Container>
               <Menu.Item header>
-                <i className="calendar alternate outline icon" style={{fontSize: '1.5rem'}}></i>
+                <i className="quote right icon" style={{fontSize: '1.5rem'}}></i>
               </Menu.Item>
               <Menu.Item name="Events" />
               <Menu.Item>
