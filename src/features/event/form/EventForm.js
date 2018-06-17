@@ -115,6 +115,6 @@ class EventForm extends Component {
       </Segment>
     );
   }
-}
+};
 
 export default EventForm;
