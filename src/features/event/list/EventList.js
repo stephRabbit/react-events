@@ -3,12 +3,11 @@ import EventListItem from './EventListItem';
 
 class EventList extends Component {
   buildEvents() {
-    const { events, updateOpenEvent, updateDeleteEvent } = this.props;
+    const { events, updateDeleteEvent } = this.props;
     return events.map(event => {
       return <EventListItem
         key={event.id}
         event={event}
-        updateOpenEvent={updateOpenEvent}
         updateDeleteEvent={updateDeleteEvent}
       />
     });
@@ -17,7 +16,6 @@ class EventList extends Component {
   render() {
     return (
       <div>
-        <h1>Current Events</h1>
         {this.buildEvents()}
       </div>
     );
