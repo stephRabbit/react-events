@@ -6,6 +6,7 @@ import { deleteEvent } from '../eventsActions';
 // ------------------
 import LoadingStatus from '../../../app/layouts/LoadingStatus';
 import EventList from '../list/EventList';
+import EventActivity from '../../event/activity/EventActivity';
 class EventDashboard extends Component {
   handleDeleteEvent = eventId => () => {
     this.props.deleteEvent(eventId);
@@ -22,7 +23,9 @@ class EventDashboard extends Component {
             updateDeleteEvent={this.handleDeleteEvent}
           />
         </Grid.Column>
-        <Grid.Column width={6}></Grid.Column>
+        <Grid.Column width={6}>
+          <EventActivity />
+        </Grid.Column>
       </Grid>
     );
   }
