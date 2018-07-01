@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Container } from 'semantic-ui-react';
 import { Route, Switch } from 'react-router-dom';
-// Components
+// ------------------
 import NavBar from '../../features/nav/nav-bar/NavBar';
 import EventDashboard from '../../features/event/dashboard/EventDashboard';
 import EventDetailedPage from '../../features/event/detailed/EventDetailedPage';
