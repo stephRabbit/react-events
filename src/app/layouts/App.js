@@ -11,11 +11,13 @@ import PeopleDashboard from '../../features/user/peopleDashboard/PeopleDashboard
 import SettingDashboard from '../../features/user/settings/SettingsDashboard';
 import UserDetialedPage from '../../features/user/userDetialed/UserDetialedPage';
 import TestComponent from '../../features/testarea/TestComponent';
+import ModalManager from '../../features/modals/ModalManager';
 
 class App extends Component {
   render() {
     return (
       <div>
+        <ModalManager />
         <Switch>
           <Route
             component={HomePage}
