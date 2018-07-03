@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import EventListItem from './EventListItem';
 
 class EventList extends Component {
-  buildEvents() {
+  buildEvents = () => {
     const { events, updateDeleteEvent } = this.props;
-    return events.map(event => {
+    return events && events.map(event => {
       return <EventListItem
         key={event.id}
         event={event}
