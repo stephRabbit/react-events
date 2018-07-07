@@ -4,6 +4,7 @@ import { Grid } from 'semantic-ui-react';
 import { Redirect, Route, Switch } from 'react-router-dom';
 // -----------------
 import { updatePassword } from '../../auth/authActions';
+import { updateProfile } from '../userActions';
 // -------------------
 import AboutPage from './AboutPage';
 import AccountPage from './AccountPage';
@@ -12,7 +13,7 @@ import PhotoPage from './PhotoPage';
 import SettingsNav from './SettingsNav';
 
 
-const SettingsDashboard = ({ providerId, updatePassword }) => {
+const SettingsDashboard = ({ providerId, updatePassword, updateProfile, user }) => {
   return (
     <Grid>
       <Grid.Column width={12}>
@@ -24,11 +25,21 @@ const SettingsDashboard = ({ providerId, updatePassword }) => {
           />
           <Route
             path="/settings/basic"
-            component={BasicPage}
+            render={() =>
+              <BasicPage
+                initialValues={user}
+                updateProfile={updateProfile}
+              />
+            }
           />
           <Route
             path="/settings/about"
-            component={AboutPage}
+            render={() =>
+              <AboutPage
+                initialValues={user}
+                updateProfile={updateProfile}
+              />
+            }
           />
           <Route
             path="/settings/photos"
@@ -53,11 +64,13 @@ const SettingsDashboard = ({ providerId, updatePassword }) => {
 };
 
 const mapStateToProps = state => ({
-  providerId: state.firebase.auth.providerData[0].providerId
+  providerId: state.firebase.auth.providerData[0].providerId,
+  user: state.firebase.profile
 });
 
 const mapDispatchToProps = {
-  updatePassword
+  updatePassword,
+  updateProfile
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(SettingsDashboard);
