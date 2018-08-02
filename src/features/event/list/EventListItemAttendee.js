@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 import { Image, List } from 'semantic-ui-react';
 
 class EventListItemAttendee extends Component {
@@ -7,10 +8,11 @@ class EventListItemAttendee extends Component {
     return (
       <List.Item>
         <Image
-          as="a"
+          as={Link}
           circular
           size="mini"
           src={attendee.photoURL}
+          to={`/profile/${attendee.id}`}
         />
       </List.Item>
     );

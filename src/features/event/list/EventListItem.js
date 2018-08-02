@@ -1,13 +1,15 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { Button, Icon, Item, List, Segment } from 'semantic-ui-react';
+import { Button, Icon, Item, Label, List, Segment } from 'semantic-ui-react';
 import format from 'date-fns/format';
+// -----------------
+import { objectToArray } from '../../../app/common/util/helpers';
 // -----------------
 import EventListItemAttendee from './EventListItemAttendee';
 
 class EventListItem extends Component {
   render() {
-    const { event, updateDeleteEvent } = this.props;
+    const { event } = this.props;
     return (
       <Segment.Group>
         <Segment>
@@ -19,10 +21,22 @@ class EventListItem extends Component {
                 src={event.hostPhotoURL}
               />
               <Item.Content>
-                <Item.Header as="a">{event.title}</Item.Header>
+                <Item.Header
+                  as={Link}
+                  to={`/event/${event.id}`}
+                >
+                  {event.title}
+                </Item.Header>
                 <Item.Description>
-                  Hosted by <a>{event.hostedBy}</a>
+                  Hosted by <Link to={`/profile/${event.hostUid}`}>{event.hostedBy}</Link>
                 </Item.Description>
+                {event.cancelled &&
+                <Label
+                  color="red"
+                  content="This event has been cancelled"
+                  ribbon="right"
+                  style={{top:'-40px'}}
+                />}
               </Item.Content>
             </Item>
           </Item.Group>
@@ -37,8 +51,8 @@ class EventListItem extends Component {
           <List horizontal>
             {
               event.attendees &&
-              Object.values(event.attendees).map(
-                (attendee, index) => <EventListItemAttendee key={index} attendee={attendee} />
+              objectToArray(event.attendees).map(
+                (attendee) => <EventListItemAttendee key={attendee.id} attendee={attendee} />
               )
             }
           </List>
@@ -52,13 +66,6 @@ class EventListItem extends Component {
             }
           </span>
           <div className="btn-block">
-            <Button
-              as="a"
-              color="red"
-              content="Delete"
-              floated="right"
-              onClick={updateDeleteEvent(event.id)}
-            />
             <Button
               as={Link}
               color="teal"

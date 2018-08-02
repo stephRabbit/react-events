@@ -4,12 +4,28 @@ import cuid from 'cuid';
 // -------------------
 import { asyncEnd, asyncError, asyncStart } from '../async/asyncActions';
 
+export const cancelGoingToEvent = event =>
+  async (dispatch, getState, { getFirebase, getFirestore }) => {
+    const firestore = getFirestore();
+    const user = firestore.auth().currentUser;
+    try {
+      await firestore.update(`events/${event.id}`, {
+        [`attendees.${user.uid}`]: firestore.FieldValue.delete()
+      });
+      await firestore.delete(`event_attendee/${event.id}_${user.uid}`);
+      toastr.success('Success', 'You have removed yourself from this event!');
+    }
+    catch (err) {
+      console.log(err);
+      toastr.error('Oops', 'Problem removing yourself from this event!');
+    }
+  };
+
 export const deletePhoto = photo =>
   async (dispatch, getState, { getFirebase, getFirestore }) => {
     const firebase = getFirebase();
     const firestore = getFirestore();
     const user = firebase.auth().currentUser;
-
     try {
       await firebase.deleteFile(`${user.uid}/user_images/${photo.name}`);
       await firestore.delete({
@@ -21,6 +37,37 @@ export const deletePhoto = photo =>
     catch (err) {
       console.log(err);
       throw new Error('Problem deleting photo');
+    }
+  };
+
+export const goingToEvent = event =>
+  async (dispatch, getState, { getFirebase, getFirestore }) => {
+    const firestore = getFirestore();
+    const user = firestore.auth().currentUser;
+    const photoURL = getState().firebase.profile.photoURL;
+    const attendee = {
+      displayName: user.displayName,
+      going: true,
+      host: false,
+      joinDate: Date.now(),
+      photoURL: photoURL || '/assets/user.png'
+    };
+
+    try {
+      await firestore.update(`events/${event.id}`, {
+        [`attendees.${user.uid}`]: attendee
+      });
+      await firestore.set(`event_attendee/${event.id}_${user.uid}`, {
+        eventDate: event.date,
+        eventId: event.id,
+        host: false,
+        userUid: user.uid
+      });
+      toastr.success('Success', 'You have signed up to the event');
+    }
+    catch (err) {
+      console.log(err);
+      toastr.error('Oops', 'Problem signing up to event');
     }
   };
 
@@ -96,9 +143,9 @@ export const uploadProfileImage = (file, fileName) =>
         doc: user.uid,
         subcollections: [{ collection: 'photos' }]
       }, {
-        name: imageName,
-        url: downloadUrl
-      });
+          name: imageName,
+          url: downloadUrl
+        });
       dispatch(asyncEnd());
     }
     catch (err) {
