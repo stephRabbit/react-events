@@ -1,45 +1,91 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { firestoreConnect, isEmpty, isLoaded } from 'react-redux-firebase';
-import { Grid } from 'semantic-ui-react';
+import { firestoreConnect } from 'react-redux-firebase';
+import { Grid, Loader } from 'semantic-ui-react';
 // ------------------
-import { deleteEvent } from '../eventsActions';
+import { deleteEvent, getEventsForDashboard } from '../eventsActions';
 // ------------------
 import LoadingStatus from '../../../app/layouts/LoadingStatus';
 import EventList from '../list/EventList';
 import EventActivity from '../../event/activity/EventActivity';
 
 class EventDashboard extends Component {
-  handleDeleteEvent = eventId => () => {
-    this.props.deleteEvent(eventId);
+  state = {
+    moreEvents: false,
+    loadingInitial: true,
+    loadedEvents: []
   };
 
-  render() {
+  async componentDidMount() {
+    let next = await this.props.getEventsForDashboard();
+    console.log(next)
+
+    if (next && next.docs && next.docs.length > 1) {
+      this.setState({
+        moreEvents: true,
+        loadingInitial: false
+      })
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (this.props.events !== nextProps.events) {
+      this.setState({
+        loadedEvents: [
+          ...this.state.loadedEvents,
+          ...nextProps.events
+        ]
+      });
+    }
+  }
+
+  getNextEvents = async () => {
     const { events } = this.props;
-    if (!isLoaded(events) || isEmpty(events)) return <LoadingStatus inverted={true} />
+    let lastEvent = events[events.length -1];
+    console.log(lastEvent)
+    let next = await this.props.getEventsForDashboard(lastEvent);
+    console.log(next);
+    if (next && next.docs && next.docs.length <= 1) {
+      this.setState({
+        moreEvents: false
+      });
+    }
+  };
+
+
+  render() {
+    const { loading } = this.props;
+    const { loadedEvents, loadingInitial, moreEvents } = this.state;
+    if (loadingInitial) return <LoadingStatus inverted={true} />
     return (
       <Grid>
         <Grid.Column width={10}>
           <EventList
-            events={events}
-            updateDeleteEvent={this.handleDeleteEvent}
+            events={loadedEvents}
+            loading={loading}
+            moreEvents={moreEvents}
+            getNextEvents={this.getNextEvents}
           />
         </Grid.Column>
         <Grid.Column width={6}>
           <EventActivity />
+        </Grid.Column>
+        <Grid.Column width={10}>
+          <Loader active={loading} />
         </Grid.Column>
       </Grid>
     );
   }
 }
 
-const mapStateToProps = ({ async, firestore }) => ({
-  events: firestore.ordered.events,
-  loading: async.loading
+const mapStateToProps = state => ({
+  events: state.events,
+  loading: state.async.loading
 });
 
 const mapDispatchToProps = {
-  deleteEvent
+  deleteEvent,
+  getEventsForDashboard
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(

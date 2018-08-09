@@ -2,7 +2,9 @@ import moment from 'moment';
 import { toastr } from 'react-redux-toastr';
 import cuid from 'cuid';
 // -------------------
+import firebase from '../../app/config/firebase';
 import { asyncEnd, asyncError, asyncStart } from '../async/asyncActions';
+import { FETCH_EVENTS } from '../event/eventsConstants';
 
 export const cancelGoingToEvent = event =>
   async (dispatch, getState, { getFirebase, getFirestore }) => {
@@ -154,3 +156,58 @@ export const uploadProfileImage = (file, fileName) =>
       throw new Error('Problem uploading photo');
     }
   };
+
+export const getUserEvents = (userUid, activeTab) =>
+  async (dispatch, getState) => {
+    dispatch(asyncStart());
+    const today = new Date(Date.now());
+    const firestore = firebase.firestore();
+    let eventsRef = firestore.collection('event_attendee');
+    let query;
+
+    switch (activeTab) {
+      // Past events
+      case 1:
+        query = eventsRef
+          .where('userUid', '==', userUid)
+          .where('eventDate', '<=', today)
+          .orderBy('eventDate', 'desc');
+        break;
+      case 2:
+        // Past events
+        query = eventsRef
+          .where('userUid', '==', userUid)
+          .where('eventDate', '>=', today)
+          .orderBy('eventDate');
+        break;
+      case 3:
+        // Hosted events
+        query = eventsRef
+          .where('userUid', '==', userUid)
+          .where('host', '==', true)
+          .orderBy('eventDate', 'desc');
+        break;
+      default:
+        query = eventsRef
+          .where('userUid', '==', userUid)
+          .orderBy('eventDate', 'desc');
+    }
+
+    try {
+      let querySnap = await query.get();
+      let events = [];
+      for (let i = 0; i < querySnap.docs.length; i++) {
+        let evt = await firestore.collection('events').doc(querySnap.docs[i].data().eventId).get();
+        events.push({ id: evt.id, ...evt.data() });
+      }
+      dispatch({
+        type: FETCH_EVENTS,
+        payload: { events }
+      })
+      dispatch(asyncEnd());
+    }
+    catch (err) {
+      console.log(err);
+      dispatch(asyncError());
+    }
+  }

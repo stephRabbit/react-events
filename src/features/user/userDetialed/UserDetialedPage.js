@@ -12,9 +12,19 @@ import UserDetailedPhotos from './UserDetailedPhotos';
 import UserDetailedSidebar from './UserDetailedSidebar';
 // -------------------
 import { userDetailedQuery } from '../userQueries';
+import { getUserEvents } from '../userActions';
 class UserDetailedPage extends Component {
+  async componentDidMount() {
+    let events = await this.props.getUserEvents(this.props.userUid);
+    console.log(events)
+  }
+
+  changeTab = (e, data) => {
+    this.props.getUserEvents(this.props.userUid, data.activeIndex);
+  }
+
   render() {
-    const { auth, match, photos, profile, requesting } = this.props;
+    const { auth, events, eventsLoading, match, photos, profile, requesting } = this.props;
     const isCurrentUser = auth.uid === match.params.id;
     const loading = Object.values(requesting).some(req => req === true);
 
@@ -26,13 +36,17 @@ class UserDetailedPage extends Component {
         <UserDetailedInfo profile={profile} />
         <UserDetailedSidebar isCurrentUser={isCurrentUser} />
         {photos && photos.length > 0 && (<UserDetailedPhotos photos={photos} />)}
-        <UserDetailedEvents />
+        <UserDetailedEvents
+          changeTab={this.changeTab}
+          events={events}
+          eventsLoading={eventsLoading}
+        />
       </Grid>
     );
   }
 }
 
-const mapStateToProps = ({ auth, firebase, firestore }, ownProps) => {
+const mapStateToProps = ({ async, auth, events, firebase, firestore }, ownProps) => {
   let userUid = null;
   let profile = {};
 
@@ -46,6 +60,8 @@ const mapStateToProps = ({ auth, firebase, firestore }, ownProps) => {
 
   return {
     auth: firebase.auth,
+    events,
+    eventsLoading: async.loading,
     photos: firestore.ordered.photos,
     profile,
     requesting: firestore.status.requesting,
@@ -53,7 +69,11 @@ const mapStateToProps = ({ auth, firebase, firestore }, ownProps) => {
   };
 };
 
+const mapDispatchToProps = {
+  getUserEvents
+};
+
 export default compose(
-  connect(mapStateToProps),
+  connect(mapStateToProps, mapDispatchToProps),
   firestoreConnect((auth, userUid) => userDetailedQuery(auth, userUid))
 )(UserDetailedPage);
