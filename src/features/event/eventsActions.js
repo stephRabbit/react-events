@@ -152,3 +152,25 @@ export const loadEvents = () => {
     }
   };
 };
+
+export const addEventComment = (eventId, values, parentId) =>
+  async (dispatch, getState, { getFirebase }) => {
+    const firebase = getFirebase();
+    const profile = getState().firebase.profile;
+    const user = firebase.auth().currentUser;
+    let newComment = {
+      date: Date.now(),
+      displayName: profile.displayName,
+      parentId,
+      photoURL: profile.photoURL || '/assets/user.png',
+      text: values.comment,
+      uid: user.uid
+    };
+    try {
+      await firebase.push(`event_chat/${eventId}`, newComment);
+    }
+    catch (err) {
+      console.log(err);
+      toastr.err('Oops', 'Problem posting comment!')
+    }
+  };

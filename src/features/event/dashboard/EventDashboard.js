@@ -9,8 +9,16 @@ import LoadingStatus from '../../../app/layouts/LoadingStatus';
 import EventList from '../list/EventList';
 import EventActivity from '../../event/activity/EventActivity';
 
+const query = [
+  {
+    collection: 'activity',
+    orderBy: ['timestamp', 'desc'],
+    limit: 5
+  }
+]
 class EventDashboard extends Component {
   state = {
+    contextRef: {},
     moreEvents: false,
     loadingInitial: true,
     loadedEvents: []
@@ -18,7 +26,6 @@ class EventDashboard extends Component {
 
   async componentDidMount() {
     let next = await this.props.getEventsForDashboard();
-    console.log(next)
 
     if (next && next.docs && next.docs.length > 1) {
       this.setState({
@@ -42,9 +49,7 @@ class EventDashboard extends Component {
   getNextEvents = async () => {
     const { events } = this.props;
     let lastEvent = events[events.length -1];
-    console.log(lastEvent)
     let next = await this.props.getEventsForDashboard(lastEvent);
-    console.log(next);
     if (next && next.docs && next.docs.length <= 1) {
       this.setState({
         moreEvents: false
@@ -52,23 +57,26 @@ class EventDashboard extends Component {
     }
   };
 
+  handleContextRef = contextRef => this.setState({ contextRef });
 
   render() {
-    const { loading } = this.props;
-    const { loadedEvents, loadingInitial, moreEvents } = this.state;
+    const { activities, loading } = this.props;
+    const { contextRef, loadedEvents, loadingInitial, moreEvents } = this.state;
     if (loadingInitial) return <LoadingStatus inverted={true} />
     return (
       <Grid>
         <Grid.Column width={10}>
-          <EventList
-            events={loadedEvents}
-            loading={loading}
-            moreEvents={moreEvents}
-            getNextEvents={this.getNextEvents}
-          />
+          <div ref={this.handleContextRef}>
+            <EventList
+              events={loadedEvents}
+              loading={loading}
+              moreEvents={moreEvents}
+              getNextEvents={this.getNextEvents}
+            />
+          </div>
         </Grid.Column>
         <Grid.Column width={6}>
-          <EventActivity />
+          <EventActivity activities={activities} contextRef={contextRef}/>
         </Grid.Column>
         <Grid.Column width={10}>
           <Loader active={loading} />
@@ -79,6 +87,7 @@ class EventDashboard extends Component {
 }
 
 const mapStateToProps = state => ({
+  activities: state.firestore.ordered.activity,
   events: state.events,
   loading: state.async.loading
 });
@@ -89,5 +98,5 @@ const mapDispatchToProps = {
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(
-  firestoreConnect([{ collection: 'events' }])(EventDashboard)
+  firestoreConnect(query)(EventDashboard)
 );
